@@ -1,6 +1,7 @@
 package org.zywx.wbpalmstar.plugin.uexLocalNotification;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -28,14 +29,35 @@ public class SNotification {
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
                 notyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         int iconId = EUExUtil.getResDrawableID("icon");
-        Notification notification = new Notification(iconId, alerm.title,
-                System.currentTimeMillis());
-        notification.flags = Notification.FLAG_AUTO_CANCEL;
-        notification = initType(notification,alerm.getMode());
-        notification.setLatestEventInfo(context, alerm.title, alerm.content,
-                contentIntent);
+
+//        Notification notification = new Notification(iconId, alerm.title,
+//                System.currentTimeMillis());
+//        notification.flags = Notification.FLAG_AUTO_CANCEL;
+//        notification = initType(notification,alerm.getMode());
+//        notification.setLatestEventInfo(context, alerm.title, alerm.content,
+//                contentIntent);
+
         NotificationManager mMgr = (NotificationManager) context
                 .getSystemService(Context.NOTIFICATION_SERVICE);
+        Notification.Builder builder;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("my_channel_01", "customNotification",NotificationManager.IMPORTANCE_HIGH);
+            mMgr.createNotificationChannel(channel);
+            builder = new Notification.Builder(context, "my_channel_01");
+        }else {
+            builder = new Notification.Builder(context);
+        }
+//        Notification.Builder builder = new Notification.Builder(context);
+        builder.setSmallIcon(iconId);
+        builder.setContentTitle(alerm.title);
+        builder.setContentText(alerm.content);
+        builder.setContentIntent(contentIntent);//执行intent
+        Notification notification = builder.getNotification();
+        notification.flags = Notification.FLAG_AUTO_CANCEL;
+        notification=initType(notification,alerm.getMode());
+
+
+
         mId = alerm.notifyId.hashCode();
         mMgr.notify(mId, notification);
         EUexLocalNotify.addToMap(alerm.notifyId, mId);
